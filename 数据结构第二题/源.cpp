@@ -1,4 +1,4 @@
-include<iostream>
+#include<iostream>
 #define MVNum 100 //最大顶点数
 #define OK 1
 using namespace std;
@@ -38,6 +38,14 @@ typedef struct
 	Dance* base;
 	int front, rear;
 }SqQueue;
+
+typedef struct
+{
+	Dance* base;
+	Dance* top;
+	int stacksize;
+}SqStack;
+
 
 Status InitQueue(SqQueue& q)
 {
@@ -119,6 +127,7 @@ Status Display(Dance d)//输出一个
 	cout << "年龄:" << d.age << endl;
 	cout << "性别:" << d.sex << endl;
 	cout << "身高:" << d.height << endl;
+	cout << "id:" << d.id << endl;
 	cout << "体重:" << d.weight << endl;
 	cout << "职业:" << d.branch << endl;
 	cout << "从业时间:" << d.workingTime << endl;
@@ -134,7 +143,6 @@ Status CreateUDG(ALGraph& G) {
 	ArcNode* p1, * p2;
 	cout << "请输入总顶点数，总边数" << endl;
 	cin >> G.vexnum >> G.arcnum;
-	cout << "请输入顶点值" << endl;
 	for (i = 0; i < G.vexnum; i++) {
 		cout << "请输入第" << i + 1 << "个顶点数据" << endl;
 		G.vertices[i].data = CreatVNode();
@@ -163,10 +171,50 @@ int Isempty(SqQueue q)
 	return 0;
 }
 
-void BFS(ALGraph G, int v)
+
+Status InitStack(SqStack& S)
+{
+	S.base = new Dance[MVNum];
+	if (!S.base)
+		return 0;
+	S.top = S.base;
+	S.stacksize = 100;
+	return 1;
+}
+
+
+Status Push(SqStack& S, Dance v)
+{
+	if (S.top - S.base == S.stacksize)
+		return 0;
+	*S.top++ = v;
+	return 1;
+}
+
+Status Pop(SqStack& S, Dance& v)
+{
+	if (S.top == S.base)
+		return 0;
+	v = *--S.top;
+	return 1;
+}
+
+
+Status IsemptyStack(SqStack S)
+{
+	if (S.base == S.top)
+		return 1;
+	return 0;
+}
+
+void BFS(ALGraph G)
 {
 	SqQueue q;
 	Dance d;
+	int v;
+	cout << "请输入要开始遍历的初始节点id：" << endl;
+	cin >> v;
+	v = Locate(G, v);
 	InitQueue(q);
 	EnQueue(q, G.vertices[v].data);
 	visited[v] = 1;
@@ -188,12 +236,62 @@ void BFS(ALGraph G, int v)
 	}
 }
 
+void BDF(ALGraph G)
+{
+
+	SqStack q;
+	Dance d;
+	int v;
+	cout << "请输入要开始遍历的初始节点id：" << endl;
+	cin >> v;
+	v = Locate(G, v);
+	InitStack(q);
+	Push(q, G.vertices[v].data);
+	visited[v] = 1;
+	ArcNode* p;
+	while (!IsemptyStack(q))
+	{
+
+		Pop(q, d);
+		v = Locate(G, d.id);
+		p = G.vertices[v].firstarc;
+		Display(G.vertices[v].data);
+		while (p && visited[p->adjvex] != 1)
+		{
+			v = p->adjvex;
+			Push(q, G.vertices[v].data);
+			visited[v] = 1;
+			p = p->nextarc;
+		}
+	}
+}
+
+void menu()
+{
+	cout << "            Dance图结构数据处理程序" << endl;
+	cout << "1.创建Fish图" << endl;
+	cout << "2.按照深度遍历的方式打印所有的Fish;" << endl;
+	cout << "3.按照广度遍历的方式打印所有的Fish；" << endl;
+	cout << "4.退出。" << endl;
+	cout << "请输入你的选择（1-7）：" << endl;
+}
+
+
 int main() {
 	ALGraph G;
-	CreateUDG(G);
-	int v;
-	cout << "请输出从那个节点开始";
-	cin >> v;
-	BFS(G, v);
+	int i;
+	while (true)
+	{
+		menu();
+		cin >> i;
+		cout << "--------------------------------------------------------";
+		switch (i)
+		{
+		case 1:CreateUDG(G); break;
+		case 2:BDF(G); break;
+		case 3:BFS(G); break;
+		case 4:return 1; break;
+		}
+	}
 	return 0;
 }
