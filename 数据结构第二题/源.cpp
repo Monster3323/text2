@@ -2,7 +2,7 @@
 #define MVNum 100 //最大顶点数
 #define OK 1
 using namespace std;
-int visited[MVNum] = { 0 };
+
 typedef int Status;
 
 typedef struct ArcNode {   //边结点
@@ -207,13 +207,34 @@ Status IsemptyStack(SqStack S)
 	return 0;
 }
 
-void BFS(ALGraph G)
+Status Search(ALGraph G,int id)
 {
+	for (int i = 0; i < G.vexnum; i++)
+	{
+		if (G.vertices[i].data.id == id)
+			return 1;
+	}
+	return 0;
+}
+
+Status BFS(ALGraph G)
+{
+	if (G.vexnum == 0)
+	{
+		cout << "该图无任何数据无法遍历" << endl;
+		return 0;
+	}
 	SqQueue q;
 	Dance d;
-	int v;
+	int v,j;
+	int visited[MVNum] = { 0 };
 	cout << "请输入要开始遍历的初始节点id：" << endl;
 	cin >> v;
+	while(j=Search(G, v) == 0)
+	{
+		cout << "没有此节点，请重新输入：" << endl;
+		cin >> v;
+	}
 	v = Locate(G, v);
 	InitQueue(q);
 	EnQueue(q, G.vertices[v].data);
@@ -234,16 +255,27 @@ void BFS(ALGraph G)
 			p = p->nextarc;
 		}
 	}
+	return 1;
 }
 
-void BDF(ALGraph G)
+Status BDF(ALGraph G)
 {
-
+	if (G.vexnum == 0)
+	{
+		cout << "该图无任何数据无法遍历" << endl;
+		return 0;
+	}
 	SqStack q;
 	Dance d;
-	int v;
+	int v,j;
+	int visited[MVNum] = { 0 };
 	cout << "请输入要开始遍历的初始节点id：" << endl;
 	cin >> v;
+	while (j = Search(G, v) == 0)
+	{
+		cout << "没有此节点，请重新输入：" << endl;
+		cin >> v;
+	}
 	v = Locate(G, v);
 	InitStack(q);
 	Push(q, G.vertices[v].data);
@@ -264,6 +296,7 @@ void BDF(ALGraph G)
 			p = p->nextarc;
 		}
 	}
+	return 1;
 }
 
 void menu()
@@ -276,15 +309,15 @@ void menu()
 	cout << "请输入你的选择（1-7）：" << endl;
 }
 
-
 int main() {
 	ALGraph G;
+	G.vexnum = 0;
 	int i;
 	while (true)
 	{
 		menu();
+		cout << "--------------------------------------------------------"<<endl;
 		cin >> i;
-		cout << "--------------------------------------------------------";
 		switch (i)
 		{
 		case 1:CreateUDG(G); break;
