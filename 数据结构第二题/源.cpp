@@ -1,8 +1,9 @@
 #include<iostream>
+#include<string.h> 
 #define MVNum 100 //最大顶点数
 #define OK 1
 using namespace std;
-
+int visited[MVNum] = { 0 };
 typedef int Status;
 
 typedef struct ArcNode {   //边结点
@@ -38,14 +39,6 @@ typedef struct
 	Dance* base;
 	int front, rear;
 }SqQueue;
-
-typedef struct
-{
-	Dance* base;
-	Dance* top;
-	int stacksize;
-}SqStack;
-
 
 Status InitQueue(SqQueue& q)
 {
@@ -171,43 +164,7 @@ int Isempty(SqQueue q)
 	return 0;
 }
 
-
-Status InitStack(SqStack& S)
-{
-	S.base = new Dance[MVNum];
-	if (!S.base)
-		return 0;
-	S.top = S.base;
-	S.stacksize = 100;
-	return 1;
-}
-
-
-Status Push(SqStack& S, Dance v)
-{
-	if (S.top - S.base == S.stacksize)
-		return 0;
-	*S.top++ = v;
-	return 1;
-}
-
-Status Pop(SqStack& S, Dance& v)
-{
-	if (S.top == S.base)
-		return 0;
-	v = *--S.top;
-	return 1;
-}
-
-
-Status IsemptyStack(SqStack S)
-{
-	if (S.base == S.top)
-		return 1;
-	return 0;
-}
-
-Status Search(ALGraph G,int id)
+Status Search(ALGraph G, int id)
 {
 	for (int i = 0; i < G.vexnum; i++)
 	{
@@ -226,11 +183,11 @@ Status BFS(ALGraph G)
 	}
 	SqQueue q;
 	Dance d;
-	int v,j;
+	int v, j;
 	int visited[MVNum] = { 0 };
 	cout << "请输入要开始遍历的初始节点id：" << endl;
 	cin >> v;
-	while(j=Search(G, v) == 0)
+	while (j = Search(G, v) == 0)
 	{
 		cout << "没有此节点，请重新输入：" << endl;
 		cin >> v;
@@ -258,45 +215,21 @@ Status BFS(ALGraph G)
 	return 1;
 }
 
-Status BDF(ALGraph G)
+void DFS(ALGraph G, int v)
 {
-	if (G.vexnum == 0)
-	{
-		cout << "该图无任何数据无法遍历" << endl;
-		return 0;
-	}
-	SqStack q;
-	Dance d;
-	int v,j;
-	int visited[MVNum] = { 0 };
-	cout << "请输入要开始遍历的初始节点id：" << endl;
-	cin >> v;
-	while (j = Search(G, v) == 0)
-	{
-		cout << "没有此节点，请重新输入：" << endl;
-		cin >> v;
-	}
-	v = Locate(G, v);
-	InitStack(q);
-	Push(q, G.vertices[v].data);
-	visited[v] = 1;
+	int w;
 	ArcNode* p;
-	while (!IsemptyStack(q))
+	Display(G.vertices[v].data);
+	visited[v] = 1;
+	p = G.vertices[v].firstarc;
+	while (p != NULL)
 	{
-
-		Pop(q, d);
-		v = Locate(G, d.id);
-		p = G.vertices[v].firstarc;
-		Display(G.vertices[v].data);
-		while (p && visited[p->adjvex] != 1)
-		{
-			v = p->adjvex;
-			Push(q, G.vertices[v].data);
-			visited[v] = 1;
-			p = p->nextarc;
-		}
+		w = p->adjvex;
+		if (!visited[w])
+			DFS(G, w);
+		p = p->nextarc;
 	}
-	return 1;
+
 }
 
 void menu()
@@ -309,19 +242,42 @@ void menu()
 	cout << "请输入你的选择（1-7）：" << endl;
 }
 
+
 int main() {
 	ALGraph G;
 	G.vexnum = 0;
-	int i;
+	int i, k = 0;
 	while (true)
 	{
 		menu();
-		cout << "--------------------------------------------------------"<<endl;
+		cout << "--------------------------------------------------------" << endl;
 		cin >> i;
 		switch (i)
 		{
-		case 1:CreateUDG(G); break;
-		case 2:BDF(G); break;
+		case 1:
+		{
+			ALGraph G1;
+			CreateUDG(G1);
+			G = G1;
+		} break;
+		case 2:
+		{
+			if (G.vexnum == 0)
+			{
+				cout << "该图无任何数据无法遍历" << endl;
+				break;
+			}
+			cout << "请输入要开始遍历的初始节点id：" << endl;
+			int v;
+			cin >> v;
+			while (int j = Search(G, v) == 0)
+			{
+				cout << "没有此节点，请重新输入：" << endl;
+				cin >> v;
+			}
+			DFS(G, Locate(G, v));
+			memset(visited, 0, sizeof(visited));
+		} break;
 		case 3:BFS(G); break;
 		case 4:return 1; break;
 		}
